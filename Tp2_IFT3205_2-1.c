@@ -67,15 +67,16 @@ int main(int argc,char **argv)
   float** MatriceImg2=LoadImagePgm(NAME_IMG_IN2,&length,&width);
 
  
-  // .... .... .... .... .... .... .... ....
+  // .... .... .... .... .... .... .... .... .... .... .... ....
   PreFFT_Translation(MatriceImg1,length,width);
   PreFFT_Translation(MatriceImg2,length,width);
-  // ... ... ... ... ... ... ... ... ... ...
+  // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...
   FFTDD(MatriceImg1,MatriceImgI1,length,width);
   FFTDD(MatriceImg2,MatriceImgI2,length,width);
+  // .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..
   Mod(MatriceImgM1,MatriceImg1,MatriceImgI1,length,width);
   Mod(MatriceImgM2,MatriceImg2,MatriceImgI2,length,width);
-
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   /*Pour visu*/
     for(i=0;i<length;i++) 
         for(j=0;j<width;j++) 
