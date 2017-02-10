@@ -37,7 +37,7 @@ Vous devez fournir les programmes (qui doivent produire les images) suivants:
        Si vous n'arrivez pas à faire cette question, prenez un angle qui vous semble bon (comme -0.05 radian)
 
 
-     [20 pts] 
+     [20 pts]
      Tp2_IFT3205_2-4.c
         programme reprenant le programme précédent et utilisant la valeur de l'angle de rotation 
         estimée permettant de recaler en rotation l'image g (UdM_2.pgm) par interpolation
