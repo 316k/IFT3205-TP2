@@ -12,6 +12,20 @@
 /*------------------------------------------------*/
 #include <stdio.h>
 #include <math.h>
+/*------------------------------------------------------*/
+/* Prog    : Tp2_IFT3205-2-4.c                          */
+/* Auteur  :                                            */
+/* Date    : --/--/2010                                 */
+/* version :                                            */ 
+/* langage : C                                          */
+/* labo    : DIRO                                       */
+/*------------------------------------------------------*/
+
+/*------------------------------------------------*/
+/* FICHIERS INCLUS -------------------------------*/
+/*------------------------------------------------*/
+#include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,8 +37,7 @@
 #define NAME_VISUALISER "display "
 #define NAME_IMG_IN1  "UdM_1"
 #define NAME_IMG_IN2  "UdM_2"
-#define NAME_IMG_OUT1 "image-TpIFT3205-2-1a"
-#define NAME_IMG_OUT2 "image-TpIFT3205-2-1b"
+#define NAME_IMG_OUT1 "image-TpIFT3205-2-5"
 
 /*------------------------------------------------*/
 /* PROTOTYPE DE FONCTIONS  -----------------------*/   
@@ -144,6 +157,8 @@ int main(int argc,char **argv)
   float** MatriceImgM3=fmatrix_allocate_2d(length,width);
   float** MatriceImgR3=fmatrix_allocate_2d(length,width);
   float** MatriceImg3=fmatrix_allocate_2d(length,width);
+  float** MatriceImgC=fmatrix_allocate_2d(length,width);
+  float** MatriceImgIC=fmatrix_allocate_2d(length,width);
 
   //Lecture Image 
   float** MatriceImg1=LoadImagePgm(NAME_IMG_IN1,&length,&width);
@@ -182,28 +197,55 @@ int main(int argc,char **argv)
         min_error = error;
         best_angle = angle;
       }
-      printf("Angle : %f; Erreur : %f\n", angle, error);
   }
-  printf("Meilleur Angle : %f; Plus petite erreur Erreur : %f\n", best_angle, min_error);
-  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA    
-  Recal(MatriceImgM1,length,width);
-  Recal(MatriceImgM3,length,width);
+
+  IFFTDD(MatriceImg2, MatriceImgI2, length, width);
+  PreFFT_Translation(MatriceImg2, length, width);
+  matrix_rotation_billy(MatriceImg2, MatriceImg3, best_angle, length, width);
+  
+  
+  PreFFT_Translation(MatriceImg3, length, width);
+  FFTDD(MatriceImg3, MatriceImgI3, length, width);
+
+  for(i=0; i<length; i++) {
+    for(j=0; j<width; j++) {
+        //Conjugue complexe.
+        MatriceImgI2[i][j] = - MatriceImgI2[i][j];
+        //Multiplication complexe
+        MatriceImgC[i][j] = MatriceImg1[i][j] * MatriceImg3[i][j] - MatriceImgI1[i][j] * MatriceImgI3[i][j];
+        MatriceImgI2[i][j] = MatriceImg1[i][j] * MatriceImgI3[i][j] - MatriceImgI1[i][j] * MatriceImg3[i][j];
+        MatriceImg2[i][j] = MatriceImgC[i][j] / (MatriceImgM1[i][j]*MatriceImgM1[i][j]);
+    }
+  }
+  
+  IFFTDD(MatriceImg2, MatriceImgI2, length, width);
+  PreFFT_Translation(MatriceImg2, length, width);
+  float max = -INFINITY;
+  int col =0 ;
+  int row=0;
+  for(i=0; i<length; i++) {
+    for(j=0; j<width; j++) {
+        if(max < MatriceImg2[i][j]) {
+            max = MatriceImg2[i][j];
+            col = j - width/2;
+            row = i - length/2;
+        }
+    }
+  }
+  printf("Ligne = %d; Colonne = %d\n", row, col);
+  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  Recal(MatriceImg2,length,width);
+  //Recal(MatriceImg3,length,width);
 
   //Sauvegarde
-  //SaveImagePgm(NAME_IMG_OUT1,MatriceImgM1,length,width);
-  //SaveImagePgm(NAME_IMG_OUT2,MatriceImgM3,length,width);
+  SaveImagePgm(NAME_IMG_OUT1,MatriceImg2,length,width);
 
   //Commande systeme: VISU
-  /*strcpy(BufSystVisuImg,NAME_VISUALISER);
+  strcpy(BufSystVisuImg,NAME_VISUALISER);
   strcat(BufSystVisuImg,NAME_IMG_OUT1);
   strcat(BufSystVisuImg,".pgm&");
   printf(" %s",BufSystVisuImg);
   system(BufSystVisuImg);
-  strcpy(BufSystVisuImg,NAME_VISUALISER);
-  strcat(BufSystVisuImg,NAME_IMG_OUT2);
-  strcat(BufSystVisuImg,".pgm&");
-  printf(" %s",BufSystVisuImg);
-  system(BufSystVisuImg);*/
 
 
   //==End=========================================================
@@ -219,7 +261,8 @@ int main(int argc,char **argv)
   free_fmatrix_2d(MatriceImg1);
   free_fmatrix_2d(MatriceImg2);  
   free_fmatrix_2d(MatriceImg3);
-
+  free_fmatrix_2d(MatriceImgIC);
+  free_fmatrix_2d(MatriceImgC);
   //retour sans probleme
   printf("\n C'est fini ... \n\n");
   return 0;

@@ -23,8 +23,8 @@
 #define NAME_VISUALISER "display "
 #define NAME_IMG_IN1  "UdM_1"
 #define NAME_IMG_IN2  "UdM_2"
-#define NAME_IMG_OUT1 "image-TpIFT3205-2-1a"
-#define NAME_IMG_OUT2 "image-TpIFT3205-2-1b"
+#define NAME_IMG_OUT1 "image-TpIFT3205-2-4"
+#define NAME_IMG_OUT2 "image-TpIFT3205-2-4aaaaaa"
 
 /*------------------------------------------------*/
 /* PROTOTYPE DE FONCTIONS  -----------------------*/   
@@ -182,19 +182,21 @@ int main(int argc,char **argv)
         min_error = error;
         best_angle = angle;
       }
-      printf("Angle : %f; Erreur : %f\n", angle, error);
   }
   printf("Meilleur Angle : %f; Plus petite erreur Erreur : %f\n", best_angle, min_error);
-  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA    
-  Recal(MatriceImgM1,length,width);
-  Recal(MatriceImgM3,length,width);
+  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  IFFTDD(MatriceImg2, MatriceImgI2, length, width);
+  PreFFT_Translation(MatriceImg2, length, width);
+  matrix_rotation_billy(MatriceImg2, MatriceImg3, best_angle, length, width);
+  //Recal(MatriceImg2,length,width);
+  //Recal(MatriceImg3,length,width);
 
   //Sauvegarde
-  //SaveImagePgm(NAME_IMG_OUT1,MatriceImgM1,length,width);
-  //SaveImagePgm(NAME_IMG_OUT2,MatriceImgM3,length,width);
+  SaveImagePgm(NAME_IMG_OUT1,MatriceImg3,length,width);
+  SaveImagePgm(NAME_IMG_OUT2,MatriceImg2,length,width);
 
   //Commande systeme: VISU
-  /*strcpy(BufSystVisuImg,NAME_VISUALISER);
+  strcpy(BufSystVisuImg,NAME_VISUALISER);
   strcat(BufSystVisuImg,NAME_IMG_OUT1);
   strcat(BufSystVisuImg,".pgm&");
   printf(" %s",BufSystVisuImg);
@@ -203,7 +205,7 @@ int main(int argc,char **argv)
   strcat(BufSystVisuImg,NAME_IMG_OUT2);
   strcat(BufSystVisuImg,".pgm&");
   printf(" %s",BufSystVisuImg);
-  system(BufSystVisuImg);*/
+  system(BufSystVisuImg);
 
 
   //==End=========================================================
