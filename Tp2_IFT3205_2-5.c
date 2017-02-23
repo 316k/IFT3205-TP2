@@ -159,7 +159,10 @@ int main(int argc,char **argv)
   float** MatriceImg3=fmatrix_allocate_2d(length,width);
   float** MatriceImgC=fmatrix_allocate_2d(length,width);
   float** MatriceImgIC=fmatrix_allocate_2d(length,width);
-
+  float** MatriceImg4 = fmatrix_allocate_2d(length,width);
+  float** MatriceImgI4 = fmatrix_allocate_2d(length,width);
+  float** MatriceImgM4 = fmatrix_allocate_2d(length,width);
+  
   //Lecture Image 
   float** MatriceImg1=LoadImagePgm(NAME_IMG_IN1,&length,&width);
   float** MatriceImg2=LoadImagePgm(NAME_IMG_IN2,&length,&width);
@@ -202,24 +205,38 @@ int main(int argc,char **argv)
   IFFTDD(MatriceImg2, MatriceImgI2, length, width);
   PreFFT_Translation(MatriceImg2, length, width);
   matrix_rotation_billy(MatriceImg2, MatriceImg3, best_angle, length, width);
-  
+
   
   PreFFT_Translation(MatriceImg3, length, width);
+  for(i=0; i<length; i++) {
+    for(j=0; j<width; j++) { 
+      MatriceImg4[i][j] = MatriceImg3[i][j];
+      MatriceImgI4[i][j] = MatriceImgI3[i][j];
+    }
+  }
+  for(i=0; i<length/2; i++) {
+    for(j=0; j<width/2; j++) {
+         float tmp = MatriceImg3[i][j];
+         MatriceImg3[i][j] = MatriceImg3[length - i-1][length - j-1];
+         MatriceImg3[length - i-1][length - j-1] = tmp;
+    }
+  }
+  FFTDD(MatriceImg4, MatriceImgI4, length, width);
+  Mod(MatriceImgM4,MatriceImg4,MatriceImgI4,length,width);
+  
   FFTDD(MatriceImg3, MatriceImgI3, length, width);
 
   for(i=0; i<length; i++) {
     for(j=0; j<width; j++) {
-        //Conjugue complexe.
-        MatriceImgI2[i][j] = - MatriceImgI2[i][j];
         //Multiplication complexe
         MatriceImgC[i][j] = MatriceImg1[i][j] * MatriceImg3[i][j] - MatriceImgI1[i][j] * MatriceImgI3[i][j];
         MatriceImgIC[i][j] = MatriceImg1[i][j] * MatriceImgI3[i][j] - MatriceImgI1[i][j] * MatriceImg3[i][j];
 
-        MatriceImg2[i][j] = MatriceImgC[i][j] / (MatriceImgM1[i][j]*MatriceImgM1[i][j]);
-        MatriceImgI2[i][j] = MatriceImgIC[i][j] / (MatriceImgM1[i][j]*MatriceImgM1[i][j]);
+        MatriceImg2[i][j] = MatriceImgC[i][j] / (MatriceImgM4[i][j]*MatriceImgM4[i][j]);
+        MatriceImgI2[i][j] = MatriceImgIC[i][j] / (MatriceImgM4[i][j]*MatriceImgM4[i][j]);
     }
   }
-  
+
   IFFTDD(MatriceImg2, MatriceImgI2, length, width);
   PreFFT_Translation(MatriceImg2, length, width);
   float max = -INFINITY;
@@ -240,7 +257,7 @@ int main(int argc,char **argv)
   //Recal(MatriceImg3,length,width);
 
   //Sauvegarde
-  SaveImagePgm(NAME_IMG_OUT1,MatriceImg2,length,width);
+  SaveImagePgm(NAME_IMG_OUT1,MatriceImgM3,length,width);
 
   //Commande systeme: VISU
   strcpy(BufSystVisuImg,NAME_VISUALISER);
