@@ -167,18 +167,19 @@ int main(int argc,char **argv)
   float** MatriceImg1=LoadImagePgm(NAME_IMG_IN1,&length,&width);
   float** MatriceImg2=LoadImagePgm(NAME_IMG_IN2,&length,&width);
 
- 
   // .... .... .... .... .... .... .... .... .... .... .... ....
   PreFFT_Translation(MatriceImg1,length,width);
   PreFFT_Translation(MatriceImg2,length,width);
+  
   // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...
   FFTDD(MatriceImg1,MatriceImgI1,length,width);
   FFTDD(MatriceImg2,MatriceImgI2,length,width);
+  
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   Mod(MatriceImgM1,MatriceImg1,MatriceImgI1,length,width);
   Mod(MatriceImgM2,MatriceImg2,MatriceImgI2,length,width);
   // .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..
-
+  
   float angle, best_angle, min_error = INFINITY, error;
 
   for(angle = -PI/16; angle < PI/16; angle += 0.005) {
@@ -204,23 +205,33 @@ int main(int argc,char **argv)
 
   IFFTDD(MatriceImg2, MatriceImgI2, length, width);
   PreFFT_Translation(MatriceImg2, length, width);
+  
   matrix_rotation_billy(MatriceImg2, MatriceImg3, best_angle, length, width);
-
   
   PreFFT_Translation(MatriceImg3, length, width);
   for(i=0; i<length; i++) {
-    for(j=0; j<width; j++) { 
-      MatriceImg4[i][j] = MatriceImg3[i][j];
-      MatriceImgI4[i][j] = MatriceImgI3[i][j];
-    }
+      for(j=0; j<width; j++) { 
+          MatriceImg4[i][j] = MatriceImg3[i][j];
+          MatriceImgI4[i][j] = MatriceImgI3[i][j];
+      }
   }
+  
   for(i=0; i<length/2; i++) {
-    for(j=0; j<width/2; j++) {
-         float tmp = MatriceImg3[i][j];
-         MatriceImg3[i][j] = MatriceImg3[length - i-1][length - j-1];
-         MatriceImg3[length - i-1][length - j-1] = tmp;
-    }
+      for(j=0; j<width; j++) {
+          float tmp = MatriceImg3[i][j];
+          MatriceImg3[i][j] = MatriceImg3[length - i - 1][j];
+          MatriceImg3[length - i - 1][j] = tmp;
+      }
   }
+  
+  for(i=0; i<length; i++) {
+      for(j=0; j<width/2; j++) {
+          float tmp = MatriceImg3[i][j];
+          MatriceImg3[i][j] = MatriceImg3[i][width - j - 1];
+          MatriceImg3[i][width - j - 1] = tmp;
+      }
+  }
+  
   FFTDD(MatriceImg4, MatriceImgI4, length, width);
   Mod(MatriceImgM4,MatriceImg4,MatriceImgI4,length,width);
   
@@ -251,13 +262,14 @@ int main(int argc,char **argv)
         }
     }
   }
+  
   printf("Ligne = %d; Colonne = %d\n", row, col);
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   Recal(MatriceImg2,length,width);
   //Recal(MatriceImg3,length,width);
 
   //Sauvegarde
-  SaveImagePgm(NAME_IMG_OUT1,MatriceImgM3,length,width);
+  SaveImagePgm(NAME_IMG_OUT1,MatriceImg2,length,width);
 
   //Commande systeme: VISU
   strcpy(BufSystVisuImg,NAME_VISUALISER);
