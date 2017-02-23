@@ -1,19 +1,5 @@
 /*------------------------------------------------------*/
-/* Prog    : Tp2_IFT3205-2-4.c                          */
-/* Auteur  :                                            */
-/* Date    : --/--/2010                                 */
-/* version :                                            */ 
-/* langage : C                                          */
-/* labo    : DIRO                                       */
-/*------------------------------------------------------*/
-
-/*------------------------------------------------*/
-/* FICHIERS INCLUS -------------------------------*/
-/*------------------------------------------------*/
-#include <stdio.h>
-#include <math.h>
-/*------------------------------------------------------*/
-/* Prog    : Tp2_IFT3205-2-4.c                          */
+/* Prog    : Tp2_IFT3205-2-5.c                          */
 /* Auteur  :                                            */
 /* Date    : --/--/2010                                 */
 /* version :                                            */ 
@@ -162,6 +148,8 @@ int main(int argc,char **argv)
   float** MatriceImg4 = fmatrix_allocate_2d(length,width);
   float** MatriceImgI4 = fmatrix_allocate_2d(length,width);
   float** MatriceImgM4 = fmatrix_allocate_2d(length,width);
+  float** MatriceImgFINAL = fmatrix_allocate_2d(length,width);
+  float** MatriceImgIFINAL = fmatrix_allocate_2d(length,width);
   
   //Lecture Image 
   float** MatriceImg1=LoadImagePgm(NAME_IMG_IN1,&length,&width);
@@ -207,8 +195,7 @@ int main(int argc,char **argv)
   PreFFT_Translation(MatriceImg2, length, width);
   
   matrix_rotation_billy(MatriceImg2, MatriceImg3, best_angle, length, width);
-  
-  PreFFT_Translation(MatriceImg3, length, width);
+  //matrix_rotation_billy(MatriceImg2, MatriceImg3, 0.05, length, width);
   for(i=0; i<length; i++) {
       for(j=0; j<width; j++) { 
           MatriceImg4[i][j] = MatriceImg3[i][j];
@@ -232,44 +219,49 @@ int main(int argc,char **argv)
       }
   }
   
+  PreFFT_Translation(MatriceImg3, length, width);
+  PreFFT_Translation(MatriceImg4, length, width);
+
   FFTDD(MatriceImg4, MatriceImgI4, length, width);
   Mod(MatriceImgM4,MatriceImg4,MatriceImgI4,length,width);
   
   FFTDD(MatriceImg3, MatriceImgI3, length, width);
-
+  
+  MultMatrix(MatriceImgC, MatriceImgIC,MatriceImg1, MatriceImgI1, MatriceImg3, MatriceImgI3, length, width);
+  
   for(i=0; i<length; i++) {
     for(j=0; j<width; j++) {
         //Multiplication complexe
-        MatriceImgC[i][j] = MatriceImg1[i][j] * MatriceImg3[i][j] - MatriceImgI1[i][j] * MatriceImgI3[i][j];
-        MatriceImgIC[i][j] = MatriceImg1[i][j] * MatriceImgI3[i][j] - MatriceImgI1[i][j] * MatriceImg3[i][j];
+        
+        //MatriceImgC[i][j] = MatriceImg1[i][j] * MatriceImg3[i][j] - MatriceImgI1[i][j] * MatriceImgI3[i][j];
+        //MatriceImgIC[i][j] = MatriceImg1[i][j] * MatriceImgI3[i][j] - MatriceImgI1[i][j] * MatriceImg3[i][j];
 
-        MatriceImg2[i][j] = MatriceImgC[i][j] / (MatriceImgM4[i][j]*MatriceImgM4[i][j]);
-        MatriceImgI2[i][j] = MatriceImgIC[i][j] / (MatriceImgM4[i][j]*MatriceImgM4[i][j]);
+        MatriceImgFINAL[i][j] = MatriceImgC[i][j] / (MatriceImgM4[i][j]*MatriceImgM4[i][j]);
+        MatriceImgIFINAL[i][j] = MatriceImgIC[i][j] / (MatriceImgM4[i][j]*MatriceImgM4[i][j]);
     }
   }
 
-  IFFTDD(MatriceImg2, MatriceImgI2, length, width);
-  PreFFT_Translation(MatriceImg2, length, width);
+  IFFTDD(MatriceImgFINAL, MatriceImgIFINAL, length, width);
+  PreFFT_Translation(MatriceImgFINAL, length, width);
   float max = -INFINITY;
   int col =0 ;
   int row=0;
   for(i=0; i<length; i++) {
     for(j=0; j<width; j++) {
-        if(max < MatriceImg2[i][j]) {
-            max = MatriceImg2[i][j];
+        if(max < MatriceImgFINAL[i][j]) {
+            max = MatriceImgFINAL[i][j];
             col = j - width/2;
             row = i - length/2;
         }
     }
   }
-  
   printf("Ligne = %d; Colonne = %d\n", row, col);
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  Recal(MatriceImg2,length,width);
+  Recal(MatriceImgFINAL,length,width);
   //Recal(MatriceImg3,length,width);
 
   //Sauvegarde
-  SaveImagePgm(NAME_IMG_OUT1,MatriceImg2,length,width);
+  SaveImagePgm(NAME_IMG_OUT1,MatriceImgFINAL,length,width);
 
   //Commande systeme: VISU
   strcpy(BufSystVisuImg,NAME_VISUALISER);
