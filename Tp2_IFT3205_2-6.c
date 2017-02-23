@@ -23,7 +23,7 @@
 #define NAME_VISUALISER "display "
 #define NAME_IMG_IN1  "UdM_1"
 #define NAME_IMG_IN2  "UdM_2"
-#define NAME_IMG_OUT1 "image-TpIFT3205-2-5"
+#define NAME_IMG_OUT1 "image-TpIFT3205-2-6"
 
 /*------------------------------------------------*/
 /* PROTOTYPE DE FONCTIONS  -----------------------*/   
@@ -117,6 +117,28 @@ void matrix_rotation_billy(float** src, float** dest, float angle, int l, int w)
             dest[y2][x2] = f_xpy + dy * (f_xpy1 - f_xpy);
         }
     }
+}
+
+float** matrix_compose(float** img1, float** img2, int translation_x, int translation_y,
+                       int l1, int w1, int l2, int w2) {
+    int length = l1 + l2, width = w1 + w2, i, j;
+    
+    float** out = fmatrix_allocate_2d(length, width);
+
+    for(i=0;i<l1;i++) 
+        for(j=0;j<w1;j++) {
+            out[length/2 - l1/2 + i][width/2 - w1/2 + j] = img1[i][j];
+        }
+    
+    for(i=0;i<l2;i++) 
+        for(j=0;j<w2;j++) {
+            if(img2[i][j] < 1)
+                continue;
+            
+            out[length/2 - l1/2 + i + translation_y][width/2 - w1/2 + j + translation_x] = img2[i][j];
+        }
+
+    return out;
 }
 
 /*------------------------------------------------*/
@@ -263,11 +285,17 @@ int main(int argc,char **argv)
   }
   printf("Ligne = %d; Colonne = %d\n", row, col);
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  Recal(MatriceImgFINAL,length,width);
-  //Recal(MatriceImg3,length,width);
+
+  IFFTDD(MatriceImg4, MatriceImgI4, length, width);
+  PreFFT_Translation(MatriceImg4, length, width);
+  
+  IFFTDD(MatriceImg1, MatriceImgI1, length, width);
+  PreFFT_Translation(MatriceImg1, length, width);
+
+  float** mix = matrix_compose(MatriceImg1, MatriceImg4, col, row, length, width, length, width);
 
   //Sauvegarde
-  SaveImagePgm(NAME_IMG_OUT1,MatriceImgFINAL,length,width);
+  SaveImagePgm(NAME_IMG_OUT1,mix,length*2,width*2);
 
   //Commande systeme: VISU
   strcpy(BufSystVisuImg,NAME_VISUALISER);
