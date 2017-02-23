@@ -134,7 +134,7 @@ void matrix_rotation_billy(float** src, float** dest, float angle, int l, int w)
 }
 
 /*------------------------------------------------*/
-/* PROGRAMME PRINCIPAL   -------------------------*/                     
+/* ET MAINTENANT, NOTRE PROGRAMME PRINCIPAL   ----*/
 /*------------------------------------------------*/
 int main(int argc,char **argv)
  {
@@ -213,8 +213,10 @@ int main(int argc,char **argv)
         MatriceImgI2[i][j] = - MatriceImgI2[i][j];
         //Multiplication complexe
         MatriceImgC[i][j] = MatriceImg1[i][j] * MatriceImg3[i][j] - MatriceImgI1[i][j] * MatriceImgI3[i][j];
-        MatriceImgI2[i][j] = MatriceImg1[i][j] * MatriceImgI3[i][j] - MatriceImgI1[i][j] * MatriceImg3[i][j];
+        MatriceImgIC[i][j] = MatriceImg1[i][j] * MatriceImgI3[i][j] - MatriceImgI1[i][j] * MatriceImg3[i][j];
+
         MatriceImg2[i][j] = MatriceImgC[i][j] / (MatriceImgM1[i][j]*MatriceImgM1[i][j]);
+        MatriceImgI2[i][j] = MatriceImgIC[i][j] / (MatriceImgM1[i][j]*MatriceImgM1[i][j]);
     }
   }
   
